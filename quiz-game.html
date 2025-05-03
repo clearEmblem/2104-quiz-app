@@ -1,0 +1,1515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Quiz Game</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 800px;
+            width: 100%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .start-screen {
+            text-align: center;
+        }
+
+        .subject-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .subject-card {
+            background: #f8f9fa;
+            border: 2px solid #e9ecef;
+            border-radius: 10px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+        }
+
+        .subject-card:hover {
+            transform: translateY(-5px);
+            border-color: #667eea;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.2);
+        }
+
+        .subject-card.selected {
+            border-color: #667eea;
+            background: #f0f3ff;
+        }
+
+        .difficulty-selector {
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .difficulty-btn {
+            padding: 10px 20px;
+            margin: 0 10px;
+            border: 2px solid #e9ecef;
+            background: white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .difficulty-btn:hover {
+            background: #f8f9fa;
+        }
+
+        .difficulty-btn.selected {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+
+        .start-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .start-btn:hover {
+            background: #218838;
+            transform: translateY(-2px);
+        }
+
+        .start-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .quiz-screen {
+            display: none;
+        }
+
+        .quiz-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 10px;
+        }
+
+        .timer {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #dc3545;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 10px;
+            background: #e9ecef;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background: #667eea;
+            transition: width 0.3s ease;
+        }
+
+        .question {
+            font-size: 1.3em;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .answers {
+            display: grid;
+            gap: 15px;
+        }
+
+        .answer-btn {
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            background: white;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: left;
+            font-size: 1.1em;
+        }
+
+        .answer-btn:hover {
+            background: #f8f9fa;
+            border-color: #667eea;
+        }
+
+        .answer-btn.correct {
+            background: #d4edda;
+            border-color: #28a745;
+            color: #155724;
+        }
+
+        .answer-btn.incorrect {
+            background: #f8d7da;
+            border-color: #dc3545;
+            color: #721c24;
+        }
+
+        .answer-btn.disabled {
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        .result-screen {
+            display: none;
+            text-align: center;
+        }
+
+        .score-display {
+            font-size: 3em;
+            font-weight: bold;
+            margin: 20px 0;
+            color: #667eea;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 20px;
+            margin: 30px 0;
+        }
+
+        .stat-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .stat-label {
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .leaderboard-screen {
+            display: none;
+            text-align: center;
+        }
+
+        .leaderboard-list {
+            margin: 20px 0;
+        }
+
+        .leaderboard-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px;
+            border-bottom: 1px solid #e9ecef;
+            font-size: 1.1em;
+        }
+
+        .leaderboard-item:nth-child(1) .rank {
+            color: #ffd700;
+        }
+
+        .leaderboard-item:nth-child(2) .rank {
+            color: #c0c0c0;
+        }
+
+        .leaderboard-item:nth-child(3) .rank {
+            color: #cd7f32;
+        }
+
+        .play-again-btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+        }
+
+        .play-again-btn:hover {
+            background: #0056b3;
+            transform: translateY(-2px);
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            font-size: 1.2em;
+            color: #666;
+        }
+
+        .hint-btn {
+            background: #ffc107;
+            color: #212529;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .hint-btn:hover {
+            background: #e0a800;
+        }
+
+        .hint-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+
+        .hint {
+            margin-top: 10px;
+            padding: 10px;
+            background: #fff3cd;
+            border: 1px solid #ffeeba;
+            border-radius: 5px;
+            display: none;
+        }
+
+        .achievement {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #28a745;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            animation: slideIn 0.5s ease-out;
+            display: none;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .settings-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #6c757d;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 50%;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .settings-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 1000;
+        }
+
+        .settings-content {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            max-width: 500px;
+            margin: 50px auto;
+            position: relative;
+        }
+
+        .close-settings {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 1.5em;
+            cursor: pointer;
+        }
+
+        @media (max-width: 600px) {
+            .subject-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .difficulty-btn {
+                margin: 5px;
+            }
+            
+            .stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button class="settings-btn" onclick="toggleSettings()">⚙️</button>
+        
+        <div class="header">
+            <h1>Advanced Quiz Game</h1>
+            <p>Test your knowledge across multiple subjects!</p>
+        </div>
+
+        <!-- Start Screen -->
+        <div class="start-screen" id="startScreen">
+            <h2>Choose Your Subject</h2>
+            <div class="subject-grid" id="subjectGrid">
+                <!-- Subject cards will be dynamically added -->
+            </div>
+            
+            <div class="difficulty-selector">
+                <h3>Select Difficulty</h3>
+                <button class="difficulty-btn" data-difficulty="easy">Easy</button>
+                <button class="difficulty-btn" data-difficulty="medium">Medium</button>
+                <button class="difficulty-btn" data-difficulty="hard">Hard</button>
+            </div>
+            
+            <button class="start-btn" id="startBtn" disabled>Start Quiz</button>
+        </div>
+
+        <!-- Quiz Screen -->
+        <div class="quiz-screen" id="quizScreen">
+            <div class="quiz-info">
+                <div>Question: <span id="currentQuestion">1</span>/<span id="totalQuestions">10</span></div>
+                <div>Score: <span id="score">0</span></div>
+                <div class="timer">Time: <span id="timer">30</span>s</div>
+            </div>
+            
+            <div class="progress-bar">
+                <div class="progress" id="progress"></div>
+            </div>
+            
+            <div class="question" id="question"></div>
+            <div class="answers" id="answers"></div>
+            
+            <button class="hint-btn" id="hintBtn" onclick="showHint()">Get Hint (2 remaining)</button>
+            <div class="hint" id="hint"></div>
+        </div>
+
+        <!-- Result Screen -->
+        <div class="result-screen" id="resultScreen">
+            <h2>Quiz Complete!</h2>
+            <div class="score-display" id="finalScore">0/10</div>
+            
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-value" id="correctAnswers">0</div>
+                    <div class="stat-label">Correct</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="incorrectAnswers">0</div>
+                    <div class="stat-label">Incorrect</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="accuracy">0%</div>
+                    <div class="stat-label">Accuracy</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="timeSpent">0s</div>
+                    <div class="stat-label">Time Spent</div>
+                </div>
+            </div>
+            
+            <button class="play-again-btn" onclick="restartQuiz()">Play Again</button>
+            <button class="play-again-btn" onclick="viewLeaderboard()">View Leaderboard</button>
+        </div>
+
+        <!-- Leaderboard Screen -->
+        <div class="leaderboard-screen" id="leaderboardScreen">
+            <h2>Leaderboard</h2>
+            <div class="leaderboard-list" id="leaderboardList">
+                <!-- Leaderboard entries will be dynamically added -->
+            </div>
+            <button class="play-again-btn" onclick="restartQuiz()">Play Again</button>
+        </div>
+
+        <!-- Loading Indicator -->
+        <div class="loading" id="loading">Loading questions...</div>
+    </div>
+
+    <!-- Achievement Notification -->
+    <div class="achievement" id="achievement"></div>
+
+    <!-- Settings Modal -->
+    <div class="settings-modal" id="settingsModal">
+        <div class="settings-content">
+            <span class="close-settings" onclick="toggleSettings()">&times;</span>
+            <h2>Settings</h2>
+            <div>
+                <label>
+                    <input type="checkbox" id="soundToggle" checked> Sound Effects
+                </label>
+            </div>
+            <div>
+                <label>
+                    <input type="checkbox" id="timerToggle" checked> Timer
+                </label>
+            </div>
+            <div>
+                <label>
+                    Timer Duration: 
+                    <select id="timerDuration">
+                        <option value="15">15 seconds</option>
+                        <option value="30" selected>30 seconds</option>
+                        <option value="60">60 seconds</option>
+                    </select>
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Quiz data structure with multiple subjects and difficulties
+        const quizData = {
+            science: {
+                easy: [
+                    {
+                        question: "What is the chemical symbol for water?",
+                        answers: ["H2O", "CO2", "O2", "NaCl"],
+                        correct: 0,
+                        hint: "It contains two hydrogen atoms and one oxygen atom"
+                    },
+                    {
+                        question: "Which planet is known as the Red Planet?",
+                        answers: ["Venus", "Mars", "Jupiter", "Saturn"],
+                        correct: 1,
+                        hint: "Named after the Roman god of war"
+                    },
+                    {
+                        question: "What is the largest organ in the human body?",
+                        answers: ["Heart", "Brain", "Liver", "Skin"],
+                        correct: 3,
+                        hint: "It covers your entire body"
+                    },
+                    {
+                        question: "What gas do plants absorb from the atmosphere?",
+                        answers: ["Oxygen", "Nitrogen", "Carbon Dioxide", "Hydrogen"],
+                        correct: 2,
+                        hint: "Humans exhale this gas"
+                    },
+                    {
+                        question: "How many bones are in the adult human body?",
+                        answers: ["106", "206", "306", "406"],
+                        correct: 1,
+                        hint: "It's more than 200"
+                    }
+                ],
+                medium: [
+                    {
+                        question: "What is the powerhouse of the cell?",
+                        answers: ["Nucleus", "Mitochondria", "Ribosome", "Chloroplast"],
+                        correct: 1,
+                        hint: "It produces ATP"
+                    },
+                    {
+                        question: "What type of bond shares electrons between atoms?",
+                        answers: ["Ionic", "Covalent", "Metallic", "Hydrogen"],
+                        correct: 1,
+                        hint: "Think of sharing"
+                    },
+                    {
+                        question: "Which scientist developed the theory of relativity?",
+                        answers: ["Newton", "Darwin", "Einstein", "Curie"],
+                        correct: 2,
+                        hint: "E=mc²"
+                    },
+                    {
+                        question: "What is the speed of light in vacuum?",
+                        answers: ["299,792 km/s", "299,792 m/s", "299,792,458 m/s", "299,792,458 km/s"],
+                        correct: 2,
+                        hint: "Measured in meters per second"
+                    },
+                    {
+                        question: "What is the most abundant element in the universe?",
+                        answers: ["Oxygen", "Carbon", "Hydrogen", "Helium"],
+                        correct: 2,
+                        hint: "The simplest element"
+                    }
+                ],
+                hard: [
+                    {
+                        question: "What is the Heisenberg Uncertainty Principle about?",
+                        answers: [
+                            "Conservation of energy",
+                            "Position and momentum cannot be simultaneously known with precision",
+                            "Wave-particle duality",
+                            "Quantum entanglement"
+                        ],
+                        correct: 1,
+                        hint: "Related to measurement limitations"
+                    },
+                    {
+                        question: "What is the name of the process where a solid changes directly to gas?",
+                        answers: ["Evaporation", "Condensation", "Sublimation", "Deposition"],
+                        correct: 2,
+                        hint: "Dry ice does this"
+                    },
+                    {
+                        question: "Which fundamental force is responsible for radioactive decay?",
+                        answers: ["Gravity", "Electromagnetic", "Strong nuclear", "Weak nuclear"],
+                        correct: 3,
+                        hint: "The weakest of the four forces"
+                    },
+                    {
+                        question: "What is the pH of pure water at 25°C?",
+                        answers: ["6.0", "7.0", "8.0", "7.4"],
+                        correct: 1,
+                        hint: "Neutral pH"
+                    },
+                    {
+                        question: "What is the first element in the lanthanide series?",
+                        answers: ["Lanthanum", "Cerium", "Praseodymium", "Neodymium"],
+                        correct: 0,
+                        hint: "It's in the name of the series"
+                    }
+                ]
+            },
+            history: {
+                easy: [
+                    {
+                        question: "Who was the first President of the United States?",
+                        answers: ["Thomas Jefferson", "George Washington", "John Adams", "Benjamin Franklin"],
+                        correct: 1,
+                        hint: "Known for not telling a lie"
+                    },
+                    {
+                        question: "In which year did World War II end?",
+                        answers: ["1943", "1944", "1945", "1946"],
+                        correct: 2,
+                        hint: "After the atomic bombs"
+                    },
+                    {
+                        question: "Who built the Great Pyramid of Giza?",
+                        answers: ["Pharaoh Khufu", "Pharaoh Ramses", "Pharaoh Tutankhamun", "Pharaoh Cleopatra"],
+                        correct: 0,
+                        hint: "Also known as Cheops"
+                    },
+                    {
+                        question: "Which empire was Julius Caesar part of?",
+                        answers: ["Greek", "Persian", "Roman", "Egyptian"],
+                        correct: 2,
+                        hint: "The eternal city"
+                    },
+                    {
+                        question: "Who wrote the Declaration of Independence?",
+                        answers: ["George Washington", "Benjamin Franklin", "John Adams", "Thomas Jefferson"],
+                        correct: 3,
+                        hint: "Third U.S. President"
+                    }
+                ],
+                medium: [
+                    {
+                        question: "What year did the Berlin Wall fall?",
+                        answers: ["1987", "1988", "1989", "1990"],
+                        correct: 2,
+                        hint: "End of the Cold War era"
+                    },
+                    {
+                        question: "Who was the first woman to win a Nobel Prize?",
+                        answers: ["Marie Curie", "Mother Teresa", "Jane Addams", "Pearl S. Buck"],
+                        correct: 0,
+                        hint: "Discovered radioactivity"
+                    },
+                    {
+                        question: "Which civilization invented paper?",
+                        answers: ["Egyptian", "Greek", "Roman", "Chinese"],
+                        correct: 3,
+                        hint: "Also invented gunpowder"
+                    },
+                    {
+                        question: "What was the name of the ship that brought the Pilgrims to America?",
+                        answers: ["Santa Maria", "Mayflower", "Endeavour", "Discovery"],
+                        correct: 1,
+                        hint: "Named after a spring flower"
+                    },
+                    {
+                        question: "Who was the first emperor of Rome?",
+                        answers: ["Julius Caesar", "Augustus", "Nero", "Marcus Aurelius"],
+                        correct: 1,
+                        hint: "Originally named Octavian"
+                    }
+                ],
+                hard: [
+                    {
+                        question: "What was the name of the treaty that ended World War I?",
+                        answers: ["Treaty of Paris", "Treaty of Versailles", "Treaty of Vienna", "Treaty of Ghent"],
+                        correct: 1,
+                        hint: "Named after a French palace"
+                    },
+                    {
+                        question: "Who was the leader of the Bolsheviks during the Russian Revolution?",
+                        answers: ["Stalin", "Trotsky", "Lenin", "Kerensky"],
+                        correct: 2,
+                        hint: "His real name was Vladimir Ilyich Ulyanov"
+                    },
+                    {
+                        question: "What year did the Byzantine Empire fall?",
+                        answers: ["1204", "1261", "1453", "1492"],
+                        correct: 2,
+                        hint: "Same century as Columbus's voyage"
+                    },
+                    {
+                        question: "Which battle is considered the turning point of the American Civil War?",
+                        answers: ["Antietam", "Gettysburg", "Bull Run", "Shiloh"],
+                        correct: 1,
+                        hint: "Lincoln gave a famous address there"
+                    },
+                    {
+                        question: "Who was the first Holy Roman Emperor?",
+                        answers: ["Charlemagne", "Otto I", "Frederick Barbarossa", "Charles V"],
+                        correct: 0,
+                        hint: "Crowned on Christmas Day, 800 AD"
+                    }
+                ]
+            },
+            geography: {
+                easy: [
+                    {
+                        question: "What is the capital of France?",
+                        answers: ["London", "Berlin", "Paris", "Madrid"],
+                        correct: 2,
+                        hint: "City of lights"
+                    },
+                    {
+                        question: "Which is the largest ocean?",
+                        answers: ["Atlantic", "Indian", "Pacific", "Arctic"],
+                        correct: 2,
+                        hint: "Covers more than 30% of Earth's surface"
+                    },
+                    {
+                        question: "What is the longest river in the world?",
+                        answers: ["Amazon", "Nile", "Mississippi", "Yangtze"],
+                        correct: 1,
+                        hint: "Flows through Egypt"
+                    },
+                    {
+                        question: "Which country has the largest population?",
+                        answers: ["India", "United States", "China", "Indonesia"],
+                        correct: 2,
+                        hint: "Over 1.4 billion people"
+                    },
+                    {
+                        question: "What is the smallest continent?",
+                        answers: ["Europe", "Australia", "Antarctica", "South America"],
+                        correct: 1,
+                        hint: "Also a country"
+                    }
+                ],
+                medium: [
+                    {
+                        question: "What is the capital of Australia?",
+                        answers: ["Sydney", "Melbourne", "Canberra", "Brisbane"],
+                        correct: 2,
+                        hint: "Purpose-built capital"
+                    },
+                    {
+                        question: "Which African country was formerly known as Abyssinia?",
+                        answers: ["Ethiopia", "Sudan", "Kenya", "Somalia"],
+                        correct: 0,
+                        hint: "Never colonized"
+                    },
+                    {
+                        question: "What is the deepest point in the ocean?",
+                        answers: ["Puerto Rico Trench", "Java Trench", "Mariana Trench", "Tonga Trench"],
+                        correct: 2,
+                        hint: "Challenger Deep"
+                    },
+                    {
+                        question: "Which country has the most time zones?",
+                        answers: ["United States", "Russia", "China", "France"],
+                        correct: 3,
+                        hint: "Including overseas territories"
+                    },
+                    {
+                        question: "What is the driest desert in the world?",
+                        answers: ["Sahara", "Gobi", "Atacama", "Kalahari"],
+                        correct: 2,
+                        hint: "Located in Chile"
+                    }
+                ],
+                hard: [
+                    {
+                        question: "Which country has the most natural lakes?",
+                        answers: ["Finland", "Canada", "Russia", "United States"],
+                        correct: 1,
+                        hint: "Has about 60% of the world's lakes"
+                    },
+                    {
+                        question: "What is the only sea without any coasts?",
+                        answers: ["Dead Sea", "Caspian Sea", "Sargasso Sea", "Aral Sea"],
+                        correct: 2,
+                        hint: "Defined by ocean currents"
+                    },
+                    {
+                        question: "Which country is home to the most UNESCO World Heritage Sites?",
+                        answers: ["China", "Italy", "Spain", "France"],
+                        correct: 1,
+                        hint: "Has 58 sites as of 2024"
+                    },
+                    {
+                        question: "What is the largest island that is not a continent?",
+                        answers: ["Greenland", "New Guinea", "Borneo", "Madagascar"],
+                        correct: 0,
+                        hint: "Belongs to Denmark"
+                    },
+                    {
+                        question: "Which two countries share the longest international border?",
+                        answers: ["Russia-China", "US-Canada", "Argentina-Chile", "India-Bangladesh"],
+                        correct: 1,
+                        hint: "8,891 kilometers long"
+                    }
+                ]
+            },
+            mathematics: {
+                easy: [
+                    {
+                        question: "What is 15 × 12?",
+                        answers: ["160", "170", "180", "190"],
+                        correct: 2,
+                        hint: "15 × 10 = 150, 15 × 2 = 30"
+                    },
+                    {
+                        question: "What is the value of π (pi) approximately?",
+                        answers: ["2.14", "3.14", "4.14", "5.14"],
+                        correct: 1,
+                        hint: "About 3 and a bit"
+                    },
+                    {
+                        question: "What is 25% of 80?",
+                        answers: ["15", "20", "25", "30"],
+                        correct: 1,
+                        hint: "One quarter of 80"
+                    },
+                    {
+                        question: "What is the square root of 144?",
+                        answers: ["10", "11", "12", "13"],
+                        correct: 2,
+                        hint: "12 × 12 = ?"
+                    },
+                    {
+                        question: "How many degrees are in a right angle?",
+                        answers: ["45°", "90°", "180°", "360°"],
+                        correct: 1,
+                        hint: "Quarter of a circle"
+                    }
+                ],
+                medium: [
+                    {
+                        question: "What is the derivative of x²?",
+                        answers: ["x", "2x", "x²", "2"],
+                        correct: 1,
+                        hint: "Power rule: bring down the power"
+                    },
+                    {
+                        question: "What is the sum of angles in a triangle?",
+                        answers: ["90°", "180°", "270°", "360°"],
+                        correct: 1,
+                        hint: "Half of a circle"
+                    },
+                    {
+                        question: "What is log₁₀(1000)?",
+                        answers: ["2", "3", "4", "10"],
+                        correct: 1,
+                        hint: "10 to what power equals 1000?"
+                    },
+                    {
+                        question: "What is the formula for the area of a circle?",
+                        answers: ["πr", "2πr", "πr²", "2πr²"],
+                        correct: 2,
+                        hint: "Involves radius squared"
+                    },
+                    {
+                        question: "What is i² (where i is the imaginary unit)?",
+                        answers: ["1", "-1", "i", "-i"],
+                        correct: 1,
+                        hint: "Definition of imaginary unit"
+                    }
+                ],
+                hard: [
+                    {
+                        question: "What is the limit of (sin x)/x as x approaches 0?",
+                        answers: ["0", "1", "∞", "undefined"],
+                        correct: 1,
+                        hint: "Famous limit in calculus"
+                    },
+                    {
+                        question: "What is Euler's identity?",
+                        answers: ["e^(iπ) + 1 = 0", "e^(iπ) - 1 = 0", "e^(iπ) = 1", "e^(iπ) = -1"],
+                        correct: 0,
+                        hint: "Most beautiful equation in mathematics"
+                    },
+                    {
+                        question: "What is the integral of 1/x dx?",
+                        answers: ["x", "ln|x| + C", "e^x + C", "1/x² + C"],
+                        correct: 1,
+                        hint: "Natural logarithm"
+                    },
+                    {
+                        question: "What is the determinant of a 2×2 matrix [[a,b],[c,d]]?",
+                        answers: ["ac - bd", "ad - bc", "ab - cd", "ad + bc"],
+                        correct: 1,
+                        hint: "Diagonal products"
+                    },
+                    {
+                        question: "What is the Taylor series expansion of e^x around x=0?",
+                        answers: [
+                            "Σ(x^n/n!)",
+                            "Σ(x^n/n)",
+                            "Σ(n*x^n)",
+                            "Σ(x^n)"
+                        ],
+                        correct: 0,
+                        hint: "Involves factorials"
+                    }
+                ]
+            },
+            literature: {
+                easy: [
+                    {
+                        question: "Who wrote 'Romeo and Juliet'?",
+                        answers: ["Charles Dickens", "William Shakespeare", "Jane Austen", "Mark Twain"],
+                        correct: 1,
+                        hint: "The Bard of Avon"
+                    },
+                    {
+                        question: "Who wrote '1984'?",
+                        answers: ["George Orwell", "Aldous Huxley", "Ray Bradbury", "H.G. Wells"],
+                        correct: 0,
+                        hint: "Also wrote Animal Farm"
+                    },
+                    {
+                        question: "Who is the author of the Harry Potter series?",
+                        answers: ["J.R.R. Tolkien", "C.S. Lewis", "J.K. Rowling", "Suzanne Collins"],
+                        correct: 2,
+                        hint: "British author, female"
+                    },
+                    {
+                        question: "What is the first line of 'Pride and Prejudice'?",
+                        answers: [
+                            "It was the best of times...",
+                            "Call me Ishmael...",
+                            "It is a truth universally acknowledged...",
+                            "All happy families are alike..."
+                        ],
+                        correct: 2,
+                        hint: "About single men and fortunes"
+                    },
+                    {
+                        question: "Who wrote 'The Great Gatsby'?",
+                        answers: ["Ernest Hemingway", "F. Scott Fitzgerald", "John Steinbeck", "William Faulkner"],
+                        correct: 1,
+                        hint: "Jazz Age writer"
+                    }
+                ],
+                medium: [
+                    {
+                        question: "What is the name of Don Quixote's horse?",
+                        answers: ["Rocinante", "Bucephalus", "Shadowfax", "Silver"],
+                        correct: 0,
+                        hint: "Spanish name"
+                    },
+                    {
+                        question: "Who wrote 'One Hundred Years of Solitude'?",
+                        answers: ["Jorge Luis Borges", "Gabriel García Márquez", "Pablo Neruda", "Octavio Paz"],
+                        correct: 1,
+                        hint: "Colombian Nobel laureate"
+                    },
+                    {
+                        question: "In which Shakespeare play does the character Iago appear?",
+                        answers: ["Macbeth", "Hamlet", "Othello", "King Lear"],
+                        correct: 2,
+                        hint: "The Moor of Venice"
+                    },
+                    {
+                        question: "Who wrote 'The Metamorphosis'?",
+                        answers: ["Franz Kafka", "Thomas Mann", "Hermann Hesse", "Rainer Maria Rilke"],
+                        correct: 0,
+                        hint: "Czech author"
+                    },
+                    {
+                        question: "What is the pen name of Mary Ann Evans?",
+                        answers: ["George Sand", "George Eliot", "Charlotte Brontë", "Virginia Woolf"],
+                        correct: 1,
+                        hint: "Wrote Middlemarch"
+                    }
+                ],
+                hard: [
+                    {
+                        question: "What is the last word of James Joyce's 'Ulysses'?",
+                        answers: ["Yes", "No", "Maybe", "Never"],
+                        correct: 0,
+                        hint: "Molly Bloom's soliloquy"
+                    },
+                    {
+                        question: "Which novel begins 'Stately, plump Buck Mulligan...'?",
+                        answers: ["A Portrait of the Artist", "Ulysses", "Finnegans Wake", "Dubliners"],
+                        correct: 1,
+                        hint: "Joyce's modernist masterpiece"
+                    },
+                    {
+                        question: "Who wrote 'The Sound and the Fury'?",
+                        answers: ["William Faulkner", "Ernest Hemingway", "John Steinbeck", "F. Scott Fitzgerald"],
+                        correct: 0,
+                        hint: "Mississippi writer"
+                    },
+                    {
+                        question: "What is the name of the narrator in 'The Great Gatsby'?",
+                        answers: ["Jay Gatsby", "Tom Buchanan", "Nick Carraway", "Jordan Baker"],
+                        correct: 2,
+                        hint: "Gatsby's neighbor"
+                    },
+                    {
+                        question: "Which Russian novel begins 'All happy families are alike...'?",
+                        answers: ["War and Peace", "Anna Karenina", "Crime and Punishment", "The Brothers Karamazov"],
+                        correct: 1,
+                        hint: "Tolstoy's tragic heroine"
+                    }
+                ]
+            }
+        };
+
+        // Game state
+        let selectedSubject = null;
+        let selectedDifficulty = null;
+        let currentQuestions = [];
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let timer = null;
+        let timeLeft = 30;
+        let totalTime = 0;
+        let correctAnswers = 0;
+        let hintsRemaining = 2;
+        let achievements = [];
+        let soundEnabled = true;
+        let timerEnabled = true;
+        let timerDuration = 30;
+
+        // Initialize the game
+        function initGame() {
+            renderSubjects();
+            setupEventListeners();
+            loadSettings();
+            loadLeaderboard();
+        }
+
+        // Render subject cards
+        function renderSubjects() {
+            const subjectGrid = document.getElementById('subjectGrid');
+            subjectGrid.innerHTML = '';
+            
+            Object.keys(quizData).forEach(subject => {
+                const card = document.createElement('div');
+                card.className = 'subject-card';
+                card.dataset.subject = subject;
+                card.innerHTML = `
+                    <h3>${subject.charAt(0).toUpperCase() + subject.slice(1)}</h3>
+                    <p>${getSubjectDescription(subject)}</p>
+                `;
+                card.addEventListener('click', () => selectSubject(subject));
+                subjectGrid.appendChild(card);
+            });
+        }
+
+        // Get subject description
+        function getSubjectDescription(subject) {
+            const descriptions = {
+                science: "Test your knowledge of physics, chemistry, and biology",
+                history: "Explore events and figures from the past",
+                geography: "Discover countries, capitals, and landmarks",
+                mathematics: "Challenge yourself with numbers and formulas",
+                literature: "Dive into books, authors, and literary works"
+            };
+            return descriptions[subject] || "Test your knowledge";
+        }
+
+        // Setup event listeners
+        function setupEventListeners() {
+            document.querySelectorAll('.difficulty-btn').forEach(btn => {
+                btn.addEventListener('click', () => selectDifficulty(btn.dataset.difficulty));
+            });
+            
+            document.getElementById('startBtn').addEventListener('click', startQuiz);
+            
+            // Settings listeners
+            document.getElementById('soundToggle').addEventListener('change', (e) => {
+                soundEnabled = e.target.checked;
+                saveSettings();
+            });
+            
+            document.getElementById('timerToggle').addEventListener('change', (e) => {
+                timerEnabled = e.target.checked;
+                saveSettings();
+            });
+            
+            document.getElementById('timerDuration').addEventListener('change', (e) => {
+                timerDuration = parseInt(e.target.value);
+                saveSettings();
+            });
+        }
+
+        // Select subject
+        function selectSubject(subject) {
+            selectedSubject = subject;
+            document.querySelectorAll('.subject-card').forEach(card => {
+                card.classList.toggle('selected', card.dataset.subject === subject);
+            });
+            checkStartButton();
+        }
+
+        // Select difficulty
+        function selectDifficulty(difficulty) {
+            selectedDifficulty = difficulty;
+            document.querySelectorAll('.difficulty-btn').forEach(btn => {
+                btn.classList.toggle('selected', btn.dataset.difficulty === difficulty);
+            });
+            checkStartButton();
+        }
+
+        // Check if start button should be enabled
+        function checkStartButton() {
+            const startBtn = document.getElementById('startBtn');
+            startBtn.disabled = !(selectedSubject && selectedDifficulty);
+        }
+
+        // Start the quiz
+        function startQuiz() {
+            currentQuestions = shuffleArray([...quizData[selectedSubject][selectedDifficulty]]);
+            currentQuestionIndex = 0;
+            score = 0;
+            correctAnswers = 0;
+            totalTime = 0;
+            hintsRemaining = 2;
+            
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('quizScreen').style.display = 'block';
+            
+            loadQuestion();
+        }
+
+        // Load a question
+        function loadQuestion() {
+            const question = currentQuestions[currentQuestionIndex];
+            
+            document.getElementById('currentQuestion').textContent = currentQuestionIndex + 1;
+            document.getElementById('totalQuestions').textContent = currentQuestions.length;
+            document.getElementById('score').textContent = score;
+            document.getElementById('question').textContent = question.question;
+            
+            // Reset hint
+            document.getElementById('hint').style.display = 'none';
+            document.getElementById('hintBtn').disabled = hintsRemaining <= 0;
+            document.getElementById('hintBtn').textContent = `Get Hint (${hintsRemaining} remaining)`;
+            
+            // Render answers
+            const answersContainer = document.getElementById('answers');
+            answersContainer.innerHTML = '';
+            
+            question.answers.forEach((answer, index) => {
+                const button = document.createElement('button');
+                button.className = 'answer-btn';
+                button.textContent = answer;
+                button.addEventListener('click', () => checkAnswer(index));
+                answersContainer.appendChild(button);
+            });
+            
+            // Update progress bar
+            const progress = ((currentQuestionIndex) / currentQuestions.length) * 100;
+            document.getElementById('progress').style.width = `${progress}%`;
+            
+            // Start timer
+            if (timerEnabled) {
+                timeLeft = timerDuration;
+                updateTimerDisplay();
+                timer = setInterval(updateTimer, 1000);
+            } else {
+                document.querySelector('.timer').style.display = 'none';
+            }
+        }
+
+        // Check answer
+        function checkAnswer(selectedIndex) {
+            clearInterval(timer);
+            const question = currentQuestions[currentQuestionIndex];
+            const buttons = document.querySelectorAll('.answer-btn');
+            
+            buttons.forEach((button, index) => {
+                button.classList.add('disabled');
+                if (index === question.correct) {
+                    button.classList.add('correct');
+                } else if (index === selectedIndex && index !== question.correct) {
+                    button.classList.add('incorrect');
+                }
+            });
+            
+            if (selectedIndex === question.correct) {
+                score += calculateScore();
+                correctAnswers++;
+                playSound('correct');
+                checkAchievements();
+            } else {
+                playSound('incorrect');
+            }
+            
+            totalTime += (timerDuration - timeLeft);
+            
+            setTimeout(() => {
+                currentQuestionIndex++;
+                if (currentQuestionIndex < currentQuestions.length) {
+                    loadQuestion();
+                } else {
+                    endQuiz();
+                }
+            }, 1500);
+        }
+
+        // Calculate score based on difficulty and time
+        function calculateScore() {
+            const baseScore = {
+                easy: 10,
+                medium: 20,
+                hard: 30
+            }[selectedDifficulty];
+            
+            const timeBonus = Math.floor((timeLeft / timerDuration) * baseScore * 0.5);
+            return baseScore + timeBonus;
+        }
+
+        // Update timer
+        function updateTimer() {
+            timeLeft--;
+            updateTimerDisplay();
+            
+            if (timeLeft <= 0) {
+                clearInterval(timer);
+                // Auto-select wrong answer
+                checkAnswer(-1);
+            }
+        }
+
+        // Update timer display
+        function updateTimerDisplay() {
+            document.getElementById('timer').textContent = timeLeft;
+            if (timeLeft <= 5) {
+                document.querySelector('.timer').style.color = '#dc3545';
+            } else {
+                document.querySelector('.timer').style.color = '#333';
+            }
+        }
+
+        // Show hint
+        function showHint() {
+            if (hintsRemaining > 0) {
+                const question = currentQuestions[currentQuestionIndex];
+                document.getElementById('hint').textContent = question.hint;
+                document.getElementById('hint').style.display = 'block';
+                hintsRemaining--;
+                document.getElementById('hintBtn').textContent = `Get Hint (${hintsRemaining} remaining)`;
+                document.getElementById('hintBtn').disabled = hintsRemaining <= 0;
+                
+                // Reduce score for using hint
+                score = Math.max(0, score - 5);
+                document.getElementById('score').textContent = score;
+            }
+        }
+
+        // End quiz
+        function endQuiz() {
+            document.getElementById('quizScreen').style.display = 'none';
+            document.getElementById('resultScreen').style.display = 'block';
+            
+            const accuracy = Math.round((correctAnswers / currentQuestions.length) * 100);
+            
+            document.getElementById('finalScore').textContent = `${score} points`;
+            document.getElementById('correctAnswers').textContent = correctAnswers;
+            document.getElementById('incorrectAnswers').textContent = currentQuestions.length - correctAnswers;
+            document.getElementById('accuracy').textContent = `${accuracy}%`;
+            document.getElementById('timeSpent').textContent = `${totalTime}s`;
+            
+            saveScore();
+        }
+
+        // Save score to leaderboard
+        function saveScore() {
+            try {
+                const leaderboard = JSON.parse(localStorage.getItem('quizLeaderboard') || '[]');
+                const playerName = prompt('Enter your name for the leaderboard:') || 'Anonymous';
+                
+                leaderboard.push({
+                    name: playerName,
+                    score: score,
+                    subject: selectedSubject,
+                    difficulty: selectedDifficulty,
+                    accuracy: Math.round((correctAnswers / currentQuestions.length) * 100),
+                    date: new Date().toISOString()
+                });
+                
+                leaderboard.sort((a, b) => b.score - a.score);
+                leaderboard.splice(10); // Keep top 10
+                
+                localStorage.setItem('quizLeaderboard', JSON.stringify(leaderboard));
+            } catch (error) {
+                console.warn('Could not save score to leaderboard:', error);
+                // Continue without saving - don't break the game flow
+            }
+        }
+
+        // View leaderboard
+        function viewLeaderboard() {
+            document.getElementById('resultScreen').style.display = 'none';
+            document.getElementById('leaderboardScreen').style.display = 'block';
+            
+            try {
+                const leaderboard = JSON.parse(localStorage.getItem('quizLeaderboard') || '[]');
+                const leaderboardList = document.getElementById('leaderboardList');
+                
+                leaderboardList.innerHTML = '';
+                
+                if (leaderboard.length === 0) {
+                    leaderboardList.innerHTML = '<div style="text-align: center; padding: 20px;">No scores yet. Be the first!</div>';
+                    return;
+                }
+                
+                leaderboard.forEach((entry, index) => {
+                    const item = document.createElement('div');
+                    item.className = 'leaderboard-item';
+                    item.innerHTML = `
+                        <div>
+                            <span class="rank">#${index + 1}</span>
+                            <span>${entry.name}</span>
+                        </div>
+                        <div>
+                            <span>${entry.score} pts</span>
+                            <span style="margin-left: 10px; font-size: 0.9em; color: #666;">
+                                ${entry.subject} (${entry.difficulty})
+                            </span>
+                        </div>
+                    `;
+                    leaderboardList.appendChild(item);
+                });
+            } catch (error) {
+                console.warn('Could not load leaderboard:', error);
+                const leaderboardList = document.getElementById('leaderboardList');
+                leaderboardList.innerHTML = '<div style="text-align: center; padding: 20px;">Unable to load leaderboard.</div>';
+            }
+        }
+
+        // Restart quiz
+        function restartQuiz() {
+            document.getElementById('resultScreen').style.display = 'none';
+            document.getElementById('leaderboardScreen').style.display = 'none';
+            document.getElementById('startScreen').style.display = 'block';
+            
+            selectedSubject = null;
+            selectedDifficulty = null;
+            document.querySelectorAll('.subject-card').forEach(card => card.classList.remove('selected'));
+            document.querySelectorAll('.difficulty-btn').forEach(btn => btn.classList.remove('selected'));
+            document.getElementById('startBtn').disabled = true;
+        }
+
+        // Check achievements
+        function checkAchievements() {
+            if (correctAnswers === 5 && !achievements.includes('streak5')) {
+                achievements.push('streak5');
+                showAchievement('5 Correct Streak! 🔥');
+            }
+            
+            if (score >= 500 && !achievements.includes('score500')) {
+                achievements.push('score500');
+                showAchievement('Score Master! 500+ points! 🏆');
+            }
+            
+            if (timeLeft >= 25 && selectedDifficulty === 'hard' && !achievements.includes('speedDemon')) {
+                achievements.push('speedDemon');
+                showAchievement('Speed Demon! Quick Hard Answer! ⚡');
+            }
+        }
+
+        // Show achievement notification
+        function showAchievement(message) {
+            const achievement = document.getElementById('achievement');
+            achievement.textContent = message;
+            achievement.style.display = 'block';
+            
+            setTimeout(() => {
+                achievement.style.display = 'none';
+            }, 3000);
+        }
+
+        // Toggle settings modal
+        function toggleSettings() {
+            const modal = document.getElementById('settingsModal');
+            modal.style.display = modal.style.display === 'block' ? 'none' : 'block';
+        }
+
+        // Save settings
+        function saveSettings() {
+            try {
+                localStorage.setItem('quizSettings', JSON.stringify({
+                    soundEnabled,
+                    timerEnabled,
+                    timerDuration
+                }));
+            } catch (error) {
+                console.warn('Could not save settings:', error);
+            }
+        }
+
+        // Load settings
+        function loadSettings() {
+            try {
+                const settings = JSON.parse(localStorage.getItem('quizSettings') || '{}');
+                soundEnabled = settings.soundEnabled !== undefined ? settings.soundEnabled : true;
+                timerEnabled = settings.timerEnabled !== undefined ? settings.timerEnabled : true;
+                timerDuration = settings.timerDuration || 30;
+                
+                document.getElementById('soundToggle').checked = soundEnabled;
+                document.getElementById('timerToggle').checked = timerEnabled;
+                document.getElementById('timerDuration').value = timerDuration;
+            } catch (error) {
+                console.warn('Could not load settings, using defaults:', error);
+                // Use default values
+                soundEnabled = true;
+                timerEnabled = true;
+                timerDuration = 30;
+            }
+        }
+
+        // Audio context (created once to avoid security issues)
+        let audioContext = null;
+
+        // Play sound
+        function playSound(type) {
+            if (!soundEnabled) return;
+            
+            try {
+                // Create audio context on first user interaction
+                if (!audioContext) {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                }
+                
+                const oscillator = audioContext.createOscillator();
+                const gainNode = audioContext.createGain();
+                
+                oscillator.connect(gainNode);
+                gainNode.connect(audioContext.destination);
+                
+                if (type === 'correct') {
+                    oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime); // C5
+                    oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.1); // E5
+                } else {
+                    oscillator.frequency.setValueAtTime(196, audioContext.currentTime); // G3
+                    oscillator.frequency.setValueAtTime(146.83, audioContext.currentTime + 0.1); // D3
+                }
+                
+                gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                
+                oscillator.type = 'sine';
+                oscillator.start(audioContext.currentTime);
+                oscillator.stop(audioContext.currentTime + 0.3);
+            } catch (error) {
+                console.warn('Audio playback failed:', error);
+                // Fail silently - audio is not critical to gameplay
+            }
+        }
+
+        // Utility function to shuffle array
+        function shuffleArray(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+            return array;
+        }
+
+        // Initialize leaderboard
+        function loadLeaderboard() {
+            try {
+                if (!localStorage.getItem('quizLeaderboard')) {
+                    localStorage.setItem('quizLeaderboard', '[]');
+                }
+            } catch (error) {
+                console.warn('Could not initialize leaderboard:', error);
+                // Continue without leaderboard functionality
+            }
+        }
+
+        // Initialize the game when the page loads
+        window.addEventListener('load', initGame);
+
+        // Handle potential security errors
+        window.addEventListener('error', function(e) {
+            console.warn('Error caught:', e.message);
+            // Continue game functionality despite errors
+        });
+
+        // Resume audio context on user interaction (required by some browsers)
+        document.addEventListener('click', function() {
+            if (audioContext && audioContext.state === 'suspended') {
+                audioContext.resume();
+            }
+        }, { once: true });
+    </script>
+</body>
+</html>
